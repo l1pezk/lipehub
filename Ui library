@@ -1,227 +1,231 @@
---====================================================
--- LIPE UI LIBRARY | Mobile Friendly | Lightweight
---====================================================
+local LipeUI = {}
 
-local UIS = game:GetService("UserInputService")
+-- Serviços
 local Players = game:GetService("Players")
-local LP = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
-local Library = {}
-Library.__index = Library
+local LocalPlayer = Players.LocalPlayer
 
---====================================================
--- UTILS
---====================================================
-local function Create(class, props)
-    local obj = Instance.new(class)
-    for k,v in pairs(props) do
-        obj[k] = v
+-- Remove UI antiga
+pcall(function()
+    if CoreGui:FindFirstChild("LipeUI") then
+        CoreGui.LipeUI:Destroy()
     end
-    return obj
+end)
+
+-- ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "LipeUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+-- Main
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 330, 0, 420)
+Main.Position = UDim2.new(0.5, -165, 0.5, -210)
+Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0,14)
+
+-- TopBar
+local Top = Instance.new("Frame", Main)
+Top.Size = UDim2.new(1,0,0,40)
+Top.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Top.BorderSizePixel = 0
+Instance.new("UICorner", Top).CornerRadius = UDim.new(0,14)
+
+local Fix = Instance.new("Frame", Top)
+Fix.Size = UDim2.new(1,0,0,14)
+Fix.Position = UDim2.new(0,0,1,-14)
+Fix.BackgroundColor3 = Top.BackgroundColor3
+Fix.BorderSizePixel = 0
+
+-- Título
+local Title = Instance.new("TextLabel", Top)
+Title.Size = UDim2.new(1,-80,1,0)
+Title.Position = UDim2.new(0,12,0,0)
+Title.Text = "Lipe Hub"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.TextColor3 = Color3.fromRGB(235,235,235)
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Botões topo
+local function TopButton(text, pos)
+    local b = Instance.new("TextButton", Top)
+    b.Size = UDim2.new(0,26,0,26)
+    b.Position = pos
+    b.Text = text
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 14
+    b.TextColor3 = Color3.fromRGB(220,220,220)
+    b.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    b.BorderSizePixel = 0
+    Instance.new("UICorner", b).CornerRadius = UDim.new(1,0)
+    return b
 end
 
---====================================================
--- MAIN UI
---====================================================
-function Library:CreateWindow(title)
-    local ScreenGui = Create("ScreenGui", {
-        Name = "LipeUI",
-        ResetOnSpawn = false,
-        Parent = game:GetService("CoreGui")
-    })
+local Min = TopButton("-", UDim2.new(1,-60,0.5,-13))
+local Close = TopButton("X", UDim2.new(1,-32,0.5,-13))
 
-    local Main = Create("Frame", {
-        Parent = ScreenGui,
-        BackgroundColor3 = Color3.fromRGB(25,25,25),
-        Size = UDim2.new(0, 320, 0, 420),
-        Position = UDim2.new(0.5, -160, 0.5, -210),
-        BorderSizePixel = 0
-    })
-    Create("UICorner", {CornerRadius = UDim.new(0,12), Parent = Main})
+-- Container
+local Container = Instance.new("ScrollingFrame", Main)
+Container.Position = UDim2.new(0,10,0,50)
+Container.Size = UDim2.new(1,-20,1,-60)
+Container.CanvasSize = UDim2.new(0,0,0,0)
+Container.ScrollBarImageTransparency = 1
+Container.BackgroundTransparency = 1
 
-    -- HEADER
-    local Header = Create("Frame", {
-        Parent = Main,
-        Size = UDim2.new(1,0,0,40),
-        BackgroundColor3 = Color3.fromRGB(30,30,30),
-        BorderSizePixel = 0
-    })
-    Create("UICorner", {CornerRadius = UDim.new(0,12), Parent = Header})
+local Layout = Instance.new("UIListLayout", Container)
+Layout.Padding = UDim.new(0,8)
 
-    local Title = Create("TextLabel", {
-        Parent = Header,
-        Text = title or "Lipe UI",
-        TextColor3 = Color3.new(1,1,1),
-        Font = Enum.Font.GothamBold,
-        TextSize = 14,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1,-80,1,0),
-        Position = UDim2.new(0,10,0,0),
-        TextXAlignment = Left
-    })
+Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    Container.CanvasSize = UDim2.new(0,0,0,Layout.AbsoluteContentSize.Y + 10)
+end)
 
-    -- CLOSE
-    local Close = Create("TextButton", {
-        Parent = Header,
-        Text = "✕",
-        Font = Enum.Font.GothamBold,
-        TextSize = 14,
-        TextColor3 = Color3.fromRGB(255,80,80),
-        BackgroundTransparency = 1,
-        Size = UDim2.new(0,30,1,0),
-        Position = UDim2.new(1,-30,0,0)
-    })
+-- Minimizar
+local minimized = false
+Min.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    TweenService:Create(Main, TweenInfo.new(0.25), {
+        Size = minimized and UDim2.new(0,330,0,40) or UDim2.new(0,330,0,420)
+    }):Play()
+end)
 
-    -- MINIMIZE
-    local Min = Create("TextButton", {
-        Parent = Header,
-        Text = "—",
-        Font = Enum.Font.GothamBold,
-        TextSize = 18,
-        TextColor3 = Color3.fromRGB(200,200,200),
-        BackgroundTransparency = 1,
-        Size = UDim2.new(0,30,1,0),
-        Position = UDim2.new(1,-60,0,0)
-    })
+-- Fechar
+Close.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
 
-    local Content = Create("ScrollingFrame", {
-        Parent = Main,
-        Size = UDim2.new(1,0,1,-40),
-        Position = UDim2.new(0,0,0,40),
-        CanvasSize = UDim2.new(0,0,0,0),
-        ScrollBarThickness = 4,
-        BackgroundTransparency = 1
-    })
+-- =========================
+-- COMPONENTES
+-- =========================
 
-    local Layout = Create("UIListLayout", {
-        Parent = Content,
-        Padding = UDim.new(0,8)
-    })
+function LipeUI:Button(text, callback)
+    local B = Instance.new("TextButton", Container)
+    B.Size = UDim2.new(1,0,0,40)
+    B.Text = text
+    B.Font = Enum.Font.Gotham
+    B.TextSize = 13
+    B.TextColor3 = Color3.fromRGB(235,235,235)
+    B.BackgroundColor3 = Color3.fromRGB(32,32,32)
+    B.BorderSizePixel = 0
+    Instance.new("UICorner", B).CornerRadius = UDim.new(0,10)
 
-    Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        Content.CanvasSize = UDim2.new(0,0,0,Layout.AbsoluteContentSize.Y + 10)
+    B.MouseButton1Click:Connect(function()
+        pcall(callback)
     end)
-
-    -- DRAG (PC + MOBILE)
-    do
-        local drag, dragInput, dragStart, startPos
-        Header.InputBegan:Connect(function(i)
-            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                drag = true
-                dragStart = i.Position
-                startPos = Main.Position
-            end
-        end)
-        Header.InputEnded:Connect(function(i)
-            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                drag = false
-            end
-        end)
-        UIS.InputChanged:Connect(function(i)
-            if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-                local delta = i.Position - dragStart
-                Main.Position = UDim2.new(
-                    startPos.X.Scale,
-                    startPos.X.Offset + delta.X,
-                    startPos.Y.Scale,
-                    startPos.Y.Offset + delta.Y
-                )
-            end
-        end)
-    end
-
-    Close.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-    end)
-
-    local minimized = false
-    Min.MouseButton1Click:Connect(function()
-        minimized = not minimized
-        Content.Visible = not minimized
-        Main.Size = minimized and UDim2.new(0,320,0,40) or UDim2.new(0,320,0,420)
-    end)
-
-    --====================================================
-    -- ELEMENTS
-    --====================================================
-    local Elements = {}
-
-    function Elements:Button(text, callback)
-        local Btn = Create("TextButton", {
-            Parent = Content,
-            Size = UDim2.new(1,-12,0,40),
-            Text = text,
-            Font = Enum.Font.Gotham,
-            TextSize = 14,
-            TextColor3 = Color3.new(1,1,1),
-            BackgroundColor3 = Color3.fromRGB(40,40,40),
-            BorderSizePixel = 0
-        })
-        Create("UICorner",{CornerRadius = UDim.new(0,8), Parent = Btn})
-        Btn.MouseButton1Click:Connect(function()
-            pcall(callback)
-        end)
-    end
-
-    function Elements:Toggle(text, default, callback)
-        local State = default or false
-
-        local Frame = Create("Frame", {
-            Parent = Content,
-            Size = UDim2.new(1,-12,0,40),
-            BackgroundColor3 = Color3.fromRGB(40,40,40),
-            BorderSizePixel = 0
-        })
-        Create("UICorner",{CornerRadius = UDim.new(0,8), Parent = Frame})
-
-        local Label = Create("TextLabel", {
-            Parent = Frame,
-            Text = text,
-            Font = Enum.Font.Gotham,
-            TextSize = 13,
-            TextColor3 = Color3.new(1,1,1),
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1,-60,1,0),
-            Position = UDim2.new(0,10,0,0),
-            TextXAlignment = Left
-        })
-
-        local Btn = Create("TextButton", {
-            Parent = Frame,
-            Size = UDim2.new(0,40,0,20),
-            Position = UDim2.new(1,-50,0.5,-10),
-            Text = "",
-            BackgroundColor3 = State and Color3.fromRGB(0,200,0) or Color3.fromRGB(80,80,80)
-        })
-        Create("UICorner",{CornerRadius = UDim.new(1,0), Parent = Btn})
-
-        Btn.MouseButton1Click:Connect(function()
-            State = not State
-            Btn.BackgroundColor3 = State and Color3.fromRGB(0,200,0) or Color3.fromRGB(80,80,80)
-            pcall(callback, State)
-        end)
-    end
-
-    function Elements:TextBox(text, callback)
-        local Box = Create("TextBox", {
-            Parent = Content,
-            Size = UDim2.new(1,-12,0,40),
-            PlaceholderText = text,
-            Font = Enum.Font.Gotham,
-            TextSize = 13,
-            TextColor3 = Color3.new(1,1,1),
-            BackgroundColor3 = Color3.fromRGB(40,40,40),
-            BorderSizePixel = 0,
-            ClearTextOnFocus = false
-        })
-        Create("UICorner",{CornerRadius = UDim.new(0,8), Parent = Box})
-
-        Box.FocusLost:Connect(function()
-            pcall(callback, Box.Text)
-        end)
-    end
-
-    return Elements
 end
 
-return setmetatable({}, Library)
+function LipeUI:Toggle(text, default, callback)
+    local T = Instance.new("Frame", Container)
+    T.Size = UDim2.new(1,0,0,40)
+    T.BackgroundColor3 = Color3.fromRGB(32,32,32)
+    T.BorderSizePixel = 0
+    Instance.new("UICorner", T).CornerRadius = UDim.new(0,10)
+
+    local L = Instance.new("TextLabel", T)
+    L.Text = text
+    L.Font = Enum.Font.Gotham
+    L.TextSize = 13
+    L.TextColor3 = Color3.fromRGB(235,235,235)
+    L.BackgroundTransparency = 1
+    L.Size = UDim2.new(1,-60,1,0)
+    L.Position = UDim2.new(0,10,0,0)
+    L.TextXAlignment = Enum.TextXAlignment.Left
+
+    local state = default or false
+
+    local Btn = Instance.new("TextButton", T)
+    Btn.Size = UDim2.new(0,36,0,18)
+    Btn.Position = UDim2.new(1,-46,0.5,-9)
+    Btn.Text = ""
+    Btn.BorderSizePixel = 0
+    Btn.BackgroundColor3 = state and Color3.fromRGB(90,170,255) or Color3.fromRGB(60,60,60)
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(1,0)
+
+    Btn.MouseButton1Click:Connect(function()
+        state = not state
+        Btn.BackgroundColor3 = state and Color3.fromRGB(90,170,255) or Color3.fromRGB(60,60,60)
+        pcall(callback, state)
+    end)
+end
+
+function LipeUI:TextBox(text, callback)
+    local B = Instance.new("TextBox", Container)
+    B.Size = UDim2.new(1,0,0,40)
+    B.PlaceholderText = text
+    B.Font = Enum.Font.Gotham
+    B.TextSize = 13
+    B.TextColor3 = Color3.fromRGB(235,235,235)
+    B.BackgroundColor3 = Color3.fromRGB(32,32,32)
+    B.BorderSizePixel = 0
+    Instance.new("UICorner", B).CornerRadius = UDim.new(0,10)
+
+    B.FocusLost:Connect(function(enter)
+        if enter then
+            pcall(callback, B.Text)
+        end
+    end)
+end
+
+function LipeUI:Slider(text, min, max, callback)
+    local Holder = Instance.new("Frame", Container)
+    Holder.Size = UDim2.new(1,0,0,50)
+    Holder.BackgroundColor3 = Color3.fromRGB(32,32,32)
+    Holder.BorderSizePixel = 0
+    Instance.new("UICorner", Holder).CornerRadius = UDim.new(0,10)
+
+    local Label = Instance.new("TextLabel", Holder)
+    Label.Size = UDim2.new(1,-20,0,20)
+    Label.Position = UDim2.new(0,10,0,0)
+    Label.Text = text
+    Label.Font = Enum.Font.Gotham
+    Label.TextSize = 12
+    Label.TextColor3 = Color3.fromRGB(235,235,235)
+    Label.BackgroundTransparency = 1
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Bar = Instance.new("Frame", Holder)
+    Bar.Size = UDim2.new(1,-20,0,6)
+    Bar.Position = UDim2.new(0,10,0,32)
+    Bar.BackgroundColor3 = Color3.fromRGB(55,55,55)
+    Bar.BorderSizePixel = 0
+    Instance.new("UICorner", Bar).CornerRadius = UDim.new(1,0)
+
+    local Fill = Instance.new("Frame", Bar)
+    Fill.Size = UDim2.new(0,0,1,0)
+    Fill.BackgroundColor3 = Color3.fromRGB(90,170,255)
+    Fill.BorderSizePixel = 0
+    Instance.new("UICorner", Fill).CornerRadius = UDim.new(1,0)
+
+    local dragging = false
+
+    Bar.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(i)
+        if dragging and i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch then
+            local percent = math.clamp((i.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
+            Fill.Size = UDim2.new(percent,0,1,0)
+            local value = math.floor(min + (max - min) * percent)
+            pcall(callback, value)
+        end
+    end)
+end
+
+return LipeUI

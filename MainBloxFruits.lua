@@ -323,49 +323,49 @@ local v15 = v14:CreateWindow({
 });
 local v16 = {
     Home = v15:AddTab({
-        Title = "☄️ Information"
+        Title = " Information"
     }),
     Main = v15:AddTab({
-        Title = "🔥 Farming"
+        Title = " Farming"
     }),
     Sea = v15:AddTab({
-        Title = "🐸 Event"
+        Title = " Event"
     }),
     ITM = v15:AddTab({
-        Title = "📚 Item"
+        Title = " Item"
     }),
     Setting = v15:AddTab({
-        Title = "⚙️ Setting"
+        Title = " Setting"
     }),
     Status = v15:AddTab({
-        Title = "🤖 Server"
+        Title = " Server"
     }),
     Stats = v15:AddTab({
-        Title = "🗃️ Index"
+        Title = " Index"
     }),
     Player = v15:AddTab({
-        Title = "⚔️ Start PvP"
+        Title = "PvP"
     }),
     Teleport = v15:AddTab({
-        Title = "🗿 Move"
+        Title = "Move"
     }),
     Visual = v15:AddTab({
-        Title = "💥 Fake"
+        Title = " Fake"
     }),
     Fruit = v15:AddTab({
-        Title = "🫐 Fruits"
+        Title = " Fruits"
     }),
     Raid = v15:AddTab({
-        Title = "⚡ Raid Auto"
+        Title = " Raid Auto"
     }),
     Race = v15:AddTab({
-        Title = "💪 Race"
+        Title = " Race"
     }),
     Shop = v15:AddTab({
-        Title = "💸 Shop"
+        Title = " Shop"
     }),
     Misc = v15:AddTab({
-        Title = "🔄 Other"
+        Title = " Other"
     })
 };
 local v17 = v14.Options;
@@ -374,7 +374,7 @@ if (v18 == 2753915549) then
     Sea1 = true;
 elseif (v18 == 4442272183) then
     Sea2 = true;
-elseif (v18 == 7449423635) then
+elseif (v18 == 100117331123089) then
     Sea3 = true;
 else
     game:Shutdown();
@@ -9329,3 +9329,4 @@ v14:Notify({
     Content = "Success ✅",
     Duration = 10
 });
+
